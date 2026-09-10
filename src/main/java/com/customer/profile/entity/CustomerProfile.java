@@ -41,6 +41,20 @@ public class CustomerProfile {
         return customerId;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+
+
     //can be public also but dont want to expose to outside world to instantiate and create objects
     protected CustomerProfile(){}
 
