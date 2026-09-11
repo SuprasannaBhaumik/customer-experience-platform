@@ -11,6 +11,7 @@ import com.customer.profile.dto.PatchProfileRequest;
 import com.customer.profile.dto.ProfileResponse;
 import com.customer.profile.dto.UpdateProfileRequest;
 import com.customer.profile.entity.CustomerProfile;
+import com.customer.profile.exception.ProfileNotFoundException;
 import com.customer.profile.repository.ProfileRepository;
 
 @Service 
@@ -29,7 +30,7 @@ public class ProfileService {
     }
 
     public ProfileResponse getProfile(UUID customerId) {
-        CustomerProfile profile = repository.findById(customerId).orElseThrow(() -> new RuntimeException("Profile not found"));
+        CustomerProfile profile = repository.findById(customerId).orElseThrow(() -> new ProfileNotFoundException(customerId));
         return new ProfileResponse(profile.getCustomerId(), profile.getFirstName(), profile.getLastName(), profile.getEmail());
     }
 
@@ -48,7 +49,7 @@ public class ProfileService {
 
     public String updateCustomerProfile(UUID customerId, UpdateProfileRequest request) {
         if(customerId != null) {
-            CustomerProfile customer = repository.findById(customerId).orElseThrow( () -> new RuntimeException("customer is not present"));
+            CustomerProfile customer = repository.findById(customerId).orElseThrow( () -> new ProfileNotFoundException(customerId));
             customer.setFirstName(request.firstName());
             customer.setFirstName(request.lastName());
             customer.setEmail(request.email());
@@ -60,7 +61,7 @@ public class ProfileService {
 
     public String patchCustomerProfile(UUID customerId, PatchProfileRequest request) {
         if(customerId != null) {
-            CustomerProfile customer = repository.findById(customerId).orElseThrow( () -> new RuntimeException("customer is not present"));
+            CustomerProfile customer = repository.findById(customerId).orElseThrow( () -> new ProfileNotFoundException(customerId));
             if(request.firstName() != null ) 
                 customer.setFirstName(request.firstName());
             if(request.lastName() != null ) 
