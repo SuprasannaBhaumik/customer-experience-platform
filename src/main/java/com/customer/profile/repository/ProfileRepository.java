@@ -19,4 +19,6 @@ public interface ProfileRepository  extends JpaRepository<CustomerProfile, UUID>
     
     Optional<CustomerProfile> findByFirstNameAndLastName(String firstName, String lastName);
 
+    Optional<CustomerProfile> findByEmailIgnoreCase(String email);
+
 }
