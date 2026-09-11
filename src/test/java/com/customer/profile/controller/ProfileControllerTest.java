@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import java.util.UUID;
 
@@ -23,40 +24,54 @@ import tools.jackson.databind.ObjectMapper;
 @WebMvcTest(ProfileController.class)
 public class ProfileControllerTest {
 
-    @Autowired 
+    @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private ProfileService profileService;
 
-    @Autowired 
+    @Autowired
     private ObjectMapper objectMapper;
 
-    @Test 
+    @Test
     void shouldCreateProfile() throws Exception {
 
         UUID customerId = UUID.randomUUID();
 
-        CreateProfileRequest request = 
-            new CreateProfileRequest(
-                "s",
-                "b",
-                "s.b@gmail.com"
-            );
+        CreateProfileRequest request = new CreateProfileRequest(
+                "sam",
+                "brown",
+                "s.b@gmail.com");
 
-        ProfileResponse response =
-            new ProfileResponse(customerId, "s", "b", "s.b@gmail.com");
+        ProfileResponse response = new ProfileResponse(customerId, "sam", "brown", "s.b@gmail.com");
 
         when(profileService.saveProfile(any(CreateProfileRequest.class))).thenReturn(response);
 
         mockMvc.perform(
-            post("/api/v1/profiles")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(request))
-        )
-        .andExpect(status().isCreated());
+                    post("/api/v1/profiles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isCreated());
 
     }
-    
+
+    @Test
+    void createProfileWithEmptyUserName() throws Exception {
+
+        CreateProfileRequest request = new CreateProfileRequest(
+                "     ",
+                "b",
+                "s.b@gmail.com");
+
+        mockMvc.perform(
+                    post("/api/v1/profiles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.apiError.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.errors.firstName").exists());
+    }
 
 }
