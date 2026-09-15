@@ -3,6 +3,7 @@ package com.customer.profile.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import com.customer.profile.dto.UpdateProfileRequest;
 import com.customer.profile.entity.CustomerPreferences;
 import com.customer.profile.entity.CustomerProfile;
 import com.customer.profile.exception.DuplicateEmailException;
+import com.customer.profile.exception.PreferenceNotFoundException;
 import com.customer.profile.exception.ProfileNotFoundException;
 import com.customer.profile.repository.ProfileRepository;
 
@@ -147,5 +149,22 @@ public class ProfileService {
                 prResponse
             );
         }).toList();
+    }
+
+    @Transactional
+    public String deletePreference(UUID customerId, int preferenceId) {
+
+        CustomerProfile customer = repository.findById(customerId).orElseThrow( () -> new ProfileNotFoundException(customerId));
+        List<CustomerPreferences> preferences = customer.getPreferences();
+
+        CustomerPreferences preferenceToDelete = 
+            preferences
+            .stream()
+            .filter(p -> p.getPreferenceId() == preferenceId)
+            .findFirst()
+            .orElseThrow(() -> new PreferenceNotFoundException(preferenceId));
+
+        customer.deletePreference(preferenceToDelete);
+        return "deleted successfully";
     }
 }

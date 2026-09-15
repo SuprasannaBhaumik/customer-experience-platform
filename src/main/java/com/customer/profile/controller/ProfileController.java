@@ -102,5 +102,9 @@ public class ProfileController {
             );
     }
 
+    @DeleteMapping("/{customerId}/preferences/{preferenceId}")
+    public ResponseEntity<String> deletePreference(@PathVariable UUID customerId, @PathVariable int preferenceId) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(profileService.deletePreference(customerId, preferenceId));
+    }
 
 }

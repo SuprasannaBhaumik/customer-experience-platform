@@ -43,7 +43,7 @@ public class ProfileControllerTest {
                 "brown",
                 "s.b@gmail.com");
 
-        ProfileResponse response = new ProfileResponse(customerId, "sam", "brown", "s.b@gmail.com");
+        ProfileResponse response = new ProfileResponse(customerId, "sam", "brown", "s.b@gmail.com", null);
 
         when(profileService.saveProfile(any(CreateProfileRequest.class))).thenReturn(response);
 
