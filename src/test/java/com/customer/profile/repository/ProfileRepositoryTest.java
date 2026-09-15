@@ -12,7 +12,9 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace;
 
 import com.customer.profile.dto.CreateProfileRequest;
+import com.customer.profile.entity.CustomerPreferences;
 import com.customer.profile.entity.CustomerProfile;
+import com.customer.profile.enums.CustomerSize;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -41,5 +43,19 @@ public class ProfileRepositoryTest {
     }
 
 
+    @Test 
+    void shouldPersistProfileWithPreferences() {
+    
+        CustomerProfile customer = new CustomerProfile("Suprasnana", "bhaumik", "s.b@gmail.com");
+        customer.addPreference(new CustomerPreferences(CustomerSize.L));
+        customer.addPreference(new CustomerPreferences(CustomerSize.XXL));
+        repository.saveAndFlush(customer);
+
+        CustomerProfile customerFromDB = repository.findByEmail("s.b@gmail.com").get();
+
+        assertEquals(customer.getFirstName(), customerFromDB.getFirstName());
+        assertEquals(customer.getPreferences().size(), customerFromDB.getPreferences().size());
+
+    }
 
 }
