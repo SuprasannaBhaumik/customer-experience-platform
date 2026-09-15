@@ -1,5 +1,6 @@
 package com.customer.profile.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.customer.profile.dto.CreateProfileRequest;
+import com.customer.profile.dto.CustomerPreferenceRequest;
+import com.customer.profile.dto.CustomerPreferenceResponse;
 import com.customer.profile.dto.PatchProfileRequest;
 import com.customer.profile.dto.ProfileResponse;
 import com.customer.profile.dto.UpdateProfileRequest;
@@ -50,6 +53,26 @@ public class ProfileController {
         return ResponseEntity.ok(profileService.findProfileByEmail(email));
     }
 
+    
+    @PutMapping(value="/{customerId}")
+    public ResponseEntity<String> updateCustomer(@PathVariable UUID customerId, @RequestBody @Valid UpdateProfileRequest request) {
+        String response = profileService.updateCustomerProfile(customerId, request);
+        if( response.equalsIgnoreCase("success")) {
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+    
+    @PatchMapping(value="/{customerId}")
+    public ResponseEntity<String> patchCustomer(@PathVariable UUID customerId, @RequestBody PatchProfileRequest request) {
+        
+        String response = profileService.patchCustomerProfile(customerId, request);
+        if (response.equalsIgnoreCase("success")) {
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+    
     @DeleteMapping(value="/{customerId}")
     public ResponseEntity<String> deleteByCustomerId(@PathVariable UUID customerId) {
         String response = profileService.deleteProfileByCustomerId(customerId);
@@ -59,23 +82,24 @@ public class ProfileController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
     }
 
-    @PutMapping(value="/{customerId}")
-    public ResponseEntity<String> updateCustomer(@PathVariable UUID customerId, @RequestBody @Valid UpdateProfileRequest request) {
-        String response = profileService.updateCustomerProfile(customerId, request);
-        if( response.equalsIgnoreCase("success")) {
-            return ResponseEntity.ok(response);
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    @PostMapping ("/{customerId}/preference")
+    public ResponseEntity<CustomerPreferenceResponse> addPreference(@PathVariable UUID customerId, @Valid @RequestBody CustomerPreferenceRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(profileService.addPreference(request, customerId));
     }
 
-    @PatchMapping(value="/{customerId}")
-    public ResponseEntity<String> patchCustomer(@PathVariable UUID customerId, @RequestBody PatchProfileRequest request) {
+    @GetMapping ("/{customerId}/details")
+    public ResponseEntity<ProfileResponse> getCustomerDetails(@PathVariable UUID customerId) {
+        return ResponseEntity.status(HttpStatus.OK).body(profileService.getCustomerDetails(customerId));
+    }
 
-        String response = profileService.patchCustomerProfile(customerId, request);
-        if (response.equalsIgnoreCase("success")) {
-            return ResponseEntity.ok(response);
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    @GetMapping ("/allDetails/{type}")
+    public ResponseEntity<List<ProfileResponse>> getAllDetails(@PathVariable String type) {
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body( "entity".equalsIgnoreCase(type) ? 
+                profileService.getAllCustomerDetails_EntityGraph(): 
+                profileService.getAllCustomerDetails_JPQL()
+            );
     }
 
 
