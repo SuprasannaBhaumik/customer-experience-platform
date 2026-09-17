@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -113,7 +114,13 @@ public class ProfileController {
         @PathVariable UUID customerId, 
         @RequestBody @Valid UpdateProfileAndPreferenceRequest profileAndPreferenceRequest
     ) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(profileService.updateProfileAndPreferences(customerId, profileAndPreferenceRequest));
+        try {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(profileService.updateProfileAndPreferences(customerId, profileAndPreferenceRequest));
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 
 }

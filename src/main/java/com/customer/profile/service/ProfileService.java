@@ -175,8 +175,8 @@ public class ProfileService {
         return "deleted successfully";
     }
 
-    @Transactional 
-    public ProfileResponse updateProfileAndPreferences(UUID customerId, UpdateProfileAndPreferenceRequest profileAndPreferenceRequest) {
+    @Transactional(rollbackFor = Exception.class)
+    public ProfileResponse updateProfileAndPreferences(UUID customerId, UpdateProfileAndPreferenceRequest profileAndPreferenceRequest) throws Exception{
 
         CustomerProfile customerProfile = repository.findById(customerId).orElseThrow( () -> new ProfileNotFoundException(customerId));
 
@@ -190,6 +190,10 @@ public class ProfileService {
             customerProfile.addPreference(new CustomerPreferences(prefRequest.size()));
         }
 
+        //throwing CheckedException, need to declare in the function as well -> public method() throws Exception {}
+        if (true)
+            throw new Exception("checked exception");
+
         auditRepository.save(new ProfileAudit(customerId, "PROFILE_UPDATED", Instant.now()));
 
         List<CustomerPreferenceResponse> prResponse = 
@@ -202,8 +206,11 @@ public class ProfileService {
                     pr.getCustomerSize()
                 ))
             .toList();
-        
-        return new ProfileResponse(
+
+        //Checked exceptions do not automatically trigger rollback by default. Exceptions and error rollback by default.
+        //throw new RuntimeException("Simulation");
+
+       return new ProfileResponse(
             customerProfile.getCustomerId(), 
             customerProfile.getFirstName(), 
             customerProfile.getLastName(), 
