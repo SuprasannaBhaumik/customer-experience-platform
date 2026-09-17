@@ -1,9 +1,9 @@
 package com.customer.profile.service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -13,13 +13,17 @@ import com.customer.profile.dto.CreateProfileRequest;
 import com.customer.profile.dto.CustomerPreferenceRequest;
 import com.customer.profile.dto.CustomerPreferenceResponse;
 import com.customer.profile.dto.PatchProfileRequest;
+import com.customer.profile.dto.PreferenceRequest;
 import com.customer.profile.dto.ProfileResponse;
+import com.customer.profile.dto.UpdateProfileAndPreferenceRequest;
 import com.customer.profile.dto.UpdateProfileRequest;
 import com.customer.profile.entity.CustomerPreferences;
 import com.customer.profile.entity.CustomerProfile;
+import com.customer.profile.entity.ProfileAudit;
 import com.customer.profile.exception.DuplicateEmailException;
 import com.customer.profile.exception.PreferenceNotFoundException;
 import com.customer.profile.exception.ProfileNotFoundException;
+import com.customer.profile.repository.ProfileAuditRepository;
 import com.customer.profile.repository.ProfileRepository;
 
 @Service
@@ -31,6 +35,9 @@ public class ProfileService {
     @Autowired
     @Qualifier("myChoosenRepo")
     private ProfileRepository repository;
+
+    @Autowired 
+    private ProfileAuditRepository auditRepository;
 
     public ProfileResponse saveProfile(CreateProfileRequest request) {
         if (repository.findByEmailIgnoreCase(request.email()).isPresent()) {
@@ -166,5 +173,42 @@ public class ProfileService {
 
         customer.deletePreference(preferenceToDelete);
         return "deleted successfully";
+    }
+
+    @Transactional 
+    public ProfileResponse updateProfileAndPreferences(UUID customerId, UpdateProfileAndPreferenceRequest profileAndPreferenceRequest) {
+
+        CustomerProfile customerProfile = repository.findById(customerId).orElseThrow( () -> new ProfileNotFoundException(customerId));
+
+        customerProfile.setFirstName(profileAndPreferenceRequest.profileRequest().firstName());
+        customerProfile.setLastName(profileAndPreferenceRequest.profileRequest().lastName());
+        customerProfile.setEmail(profileAndPreferenceRequest.profileRequest().email());
+
+        customerProfile.getPreferences().clear();
+
+        for(PreferenceRequest prefRequest: profileAndPreferenceRequest.preferenceRequests()) {
+            customerProfile.addPreference(new CustomerPreferences(prefRequest.size()));
+        }
+
+        auditRepository.save(new ProfileAudit(customerId, "PROFILE_UPDATED", Instant.now()));
+
+        List<CustomerPreferenceResponse> prResponse = 
+            customerProfile
+            .getPreferences()
+            .stream()
+            .map(pr -> 
+                new CustomerPreferenceResponse(
+                    pr.getPreferenceId(), 
+                    pr.getCustomerSize()
+                ))
+            .toList();
+        
+        return new ProfileResponse(
+            customerProfile.getCustomerId(), 
+            customerProfile.getFirstName(), 
+            customerProfile.getLastName(), 
+            customerProfile.getEmail(), 
+            prResponse
+        );
     }
 }

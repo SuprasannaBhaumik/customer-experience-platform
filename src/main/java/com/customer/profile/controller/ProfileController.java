@@ -23,6 +23,7 @@ import com.customer.profile.dto.CustomerPreferenceRequest;
 import com.customer.profile.dto.CustomerPreferenceResponse;
 import com.customer.profile.dto.PatchProfileRequest;
 import com.customer.profile.dto.ProfileResponse;
+import com.customer.profile.dto.UpdateProfileAndPreferenceRequest;
 import com.customer.profile.dto.UpdateProfileRequest;
 import com.customer.profile.service.ProfileService;
 
@@ -105,6 +106,14 @@ public class ProfileController {
     @DeleteMapping("/{customerId}/preferences/{preferenceId}")
     public ResponseEntity<String> deletePreference(@PathVariable UUID customerId, @PathVariable int preferenceId) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(profileService.deletePreference(customerId, preferenceId));
+    }
+
+    @PostMapping ("/{customerId}/updateAndAudit")
+    public ResponseEntity<ProfileResponse> updateProfileAndPreference(
+        @PathVariable UUID customerId, 
+        @RequestBody @Valid UpdateProfileAndPreferenceRequest profileAndPreferenceRequest
+    ) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(profileService.updateProfileAndPreferences(customerId, profileAndPreferenceRequest));
     }
 
 }
