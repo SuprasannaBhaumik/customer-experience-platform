@@ -21,7 +21,7 @@ public class CustomerPreferences {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column (name="preference_id")
-    private int preferenceId;
+    private Long preferenceId;
 
     @Enumerated(EnumType.STRING)
     @Column(name="customer_size")
@@ -39,11 +39,11 @@ public class CustomerPreferences {
         this.size = size;
     }
 
-    public int getPreferenceId() {
+    public Long getPreferenceId() {
         return this.preferenceId;
     }
 
-    public void setPreferenceId(int preferenceId) {
+    public void setPreferenceId(Long preferenceId) {
         this.preferenceId = preferenceId;
     }
 

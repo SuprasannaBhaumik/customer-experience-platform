@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,6 +24,7 @@ import com.customer.profile.dto.CustomerPreferenceRequest;
 import com.customer.profile.dto.CustomerPreferenceResponse;
 import com.customer.profile.dto.PatchProfileRequest;
 import com.customer.profile.dto.ProfileResponse;
+import com.customer.profile.dto.UpdateProfileAndPreferenceRequest;
 import com.customer.profile.dto.UpdateProfileRequest;
 import com.customer.profile.service.ProfileService;
 
@@ -106,5 +108,28 @@ public class ProfileController {
     public ResponseEntity<String> deletePreference(@PathVariable UUID customerId, @PathVariable int preferenceId) {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(profileService.deletePreference(customerId, preferenceId));
     }
+
+    @PostMapping ("/{customerId}/updateAndAudit")
+    public ResponseEntity<ProfileResponse> updateProfileAndPreference(
+        @PathVariable UUID customerId, 
+        @RequestBody @Valid UpdateProfileAndPreferenceRequest profileAndPreferenceRequest
+    ) {
+        try {
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(profileService.updateProfileAndPreferences(customerId, profileAndPreferenceRequest));
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PostMapping("/{customerId}/rollbackModes")
+    public void updateAudit_And_RollbackPreferenceAndProfileUpdates(@RequestBody @Valid UpdateProfileAndPreferenceRequest request, @PathVariable UUID customerId) {
+        try {
+            profileService.checkRollbackForMainAndSaveForAudit(customerId, request);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    } 
 
 }
