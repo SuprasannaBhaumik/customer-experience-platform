@@ -123,4 +123,13 @@ public class ProfileController {
         }
     }
 
+    @PostMapping("/{customerId}/rollbackModes")
+    public void updateAudit_And_RollbackPreferenceAndProfileUpdates(@RequestBody @Valid UpdateProfileAndPreferenceRequest request, @PathVariable UUID customerId) {
+        try {
+            profileService.checkRollbackForMainAndSaveForAudit(customerId, request);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    } 
+
 }

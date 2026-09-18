@@ -2,6 +2,7 @@ package com.customer.profile.service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.customer.profile.dto.AuditRequest;
 import com.customer.profile.dto.CreateProfileRequest;
 import com.customer.profile.dto.CustomerPreferenceRequest;
 import com.customer.profile.dto.CustomerPreferenceResponse;
@@ -42,6 +44,12 @@ public class ProfileService {
 
     @Autowired 
     private ProfileAuditRepository auditRepository;
+
+    @Autowired 
+    private AuditService auditService;
+
+    @Autowired 
+    private PreferenceService preferenceService;
 
     /** Creates a profile after checking for an existing email, ignoring letter case. */
     public ProfileResponse saveProfile(CreateProfileRequest request) {
@@ -246,5 +254,38 @@ public class ProfileService {
             customerProfile.getEmail(), 
             prResponse
         );
+    }
+
+
+    /**
+     * Demonstrates rolling back profile and preference changes while keeping an audit.
+     * When invoked through Spring's service proxy, this method runs in a transaction;
+     * preference saves join it, while the audit commits in a separate transaction.
+     *
+     * @throws Exception deliberately after a successful audit call to roll back the
+     *                   profile and preference changes; rollbackFor includes checked exceptions
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void checkRollbackForMainAndSaveForAudit(UUID customerId,  UpdateProfileAndPreferenceRequest request) throws Exception{
+
+        CustomerProfile customer = repository.findById(customerId).orElseThrow(() -> new ProfileNotFoundException(customerId));
+
+        // The loaded customer is managed by JPA. Dirty checking tracks these edits
+        // without an explicit save, but they will not survive this transaction's rollback.
+        customer.setFirstName(request.profileRequest().firstName());
+        customer.setLastName(request.profileRequest().lastName());
+        customer.setEmail(request.profileRequest().email());
+        
+        // Calling a separate Spring service applies its REQUIRED propagation:
+        // new preferences participate in this same transaction and roll back with it.
+        preferenceService.savePreferences(customer, request.preferenceRequests());
+        
+        // REQUIRES_NEW suspends this transaction and commits the audit independently
+        // if the call succeeds, then resumes this transaction.
+        auditService.makeAudit(customerId, request.auditRequest());
+        
+        // The checked exception leaves the service proxy, triggering rollbackFor.
+        // A controller catching it afterward does not undo that rollback or the audit commit.
+        throw new Exception("Only AUDIT will be saved, PROFILE and PREFERENCE will be ROLLBACKED");
     }
 }

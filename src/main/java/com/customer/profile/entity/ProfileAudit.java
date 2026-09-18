@@ -38,6 +38,10 @@ public class ProfileAudit {
         this.custmomerId = customerId;
     }
 
+    public Long getId() {
+        return this.id;
+    }
+
     public String getActivity() {
         return this.activity;
     }
