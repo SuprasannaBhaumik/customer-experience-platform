@@ -13,9 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase.Replace;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.customer.favorites.domain.Favorites;
-import com.customer.favorites.exception.DuplicateFavoriteException;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -55,7 +55,7 @@ public class FavoritesRepositoryTest {
     }
     
     
-    
+    @Test
     public void test_uniqueConstraint() {
 
         UUID customerId = UUID.randomUUID();
@@ -63,7 +63,9 @@ public class FavoritesRepositoryTest {
         Favorites myFavorite = new Favorites(customerId, productId, Instant.now());
         repository.saveAndFlush(myFavorite);
 
-        assertThrows(DuplicateFavoriteException.class, () -> repository.saveAndFlush(myFavorite)); 
+        Favorites duplicate = new Favorites(customerId, productId, Instant.now());
+
+        assertThrows(DataIntegrityViolationException.class, () -> repository.saveAndFlush(duplicate)); 
     }
 
 }
