@@ -1,0 +1,74 @@
+services:
+
+
+  profile-db:
+    image: postgres:17
+    container_name: profile-db
+    environment:
+      POSTGRES_DB: profile_db
+      POSTGRES_USER: profile_user
+      POSTGRES_PASSWORD: profile_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - profile-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U profile_user -d profile_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+
+  favorites-db:
+    image: postgres:17
+    container_name: favorites-db
+    environment:
+      POSTGRES_DB: favorites_db
+      POSTGRES_USER: favorites_user
+      POSTGRES_PASSWORD: favorites_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - favorites-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U favorites_user -d favorites_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  profile:
+    build:
+      context: ../../profile
+    container_name: profile
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      profile-db:
+        condition: service_healthy
+
+  favorites:
+    build:
+      context: ../../favorites
+    container_name: favorites
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      favorites-db:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: ../../gateway/api-gateway
+    container_name: api-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8080:8080"
+    depends_on:
+      - profile
+      - favorites
+    
+
+volumes:
+  profile-db-data:
+  favorites-db-data:

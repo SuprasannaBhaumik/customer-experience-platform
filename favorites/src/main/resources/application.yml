@@ -1,0 +1,17 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: favorites
+  datasource:
+    url: jdbc:postgresql://localhost:5434/favorites_db
+    username: favorites_user
+    password: favorites_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
