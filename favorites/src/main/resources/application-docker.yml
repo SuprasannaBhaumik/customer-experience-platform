@@ -1,0 +1,10 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: favorites
+  datasource:
+    url: jdbc:postgresql://favorites-db:5432/favorites_db
+    username: favorites_user
+    password: favorites_password
