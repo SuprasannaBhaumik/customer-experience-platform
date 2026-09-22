@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: ${PROFILE_DB_URL:jdbc:postgresql://localhost:5432/profile}
+    username: ${PROFILE_DB_USERNAME:suprasannabhaumik}
+    password: ${PROFILE_DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true

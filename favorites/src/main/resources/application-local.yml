@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: ${FAVORITES_DB_URL:jdbc:postgresql://localhost:5432/favorites}
+    username: ${FAVORITES_DB_USERNAME:suprasannabhaumik}
+    password: ${FAVORITES_DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
