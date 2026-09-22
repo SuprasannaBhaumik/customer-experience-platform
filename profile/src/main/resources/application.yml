@@ -4,14 +4,11 @@ server:
 spring:
   application:
     name: profile
-  datasource:
-    url: jdbc:postgresql://localhost:5433/profile_db
-    username: profile_user
-    password: profile_password
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info

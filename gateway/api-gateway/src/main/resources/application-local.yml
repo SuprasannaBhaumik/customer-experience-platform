@@ -5,10 +5,10 @@ spring:
         webflux:
           routes:
             - id: profile
-              uri: http://profile:8081
+              uri: http://localhost:8081
               predicates:
                 - Path=/api/v1/profiles/**
             - id: favorites
-              uri: http://favorites:8084
+              uri: http://localhost:8084
               predicates:
                 - Path=/api/v1/customers/{customerId}/favorites/**

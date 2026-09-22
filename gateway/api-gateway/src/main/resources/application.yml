@@ -4,16 +4,3 @@ server:
 spring:
   application:
     name: api-gateway
-  cloud:
-    gateway:
-      server:
-        webflux:
-          routes:
-            - id: profile
-              uri: http://localhost:8081
-              predicates:
-                - Path=/api/v1/profiles/**
-            - id: favorites
-              uri: http://localhost:8084
-              predicates:
-                - Path=/api/v1/customers/{customerId}/favorites/**
