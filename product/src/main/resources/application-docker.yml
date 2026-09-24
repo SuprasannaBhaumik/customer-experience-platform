@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: ${PRODUCT_DB_URL:jdbc:postgresql://product-db:5432/product_db}
+    username: ${PRODUCT_DB_USERNAME:product_user}
+    password: ${PRODUCT_DB_PASSWORD:product_password}
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}

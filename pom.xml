@@ -22,6 +22,7 @@
 		<module>address</module>
 		<module>order</module>
 		<module>favorites</module>
+		<module>product</module>
 		<module>gateway/api-gateway</module>
 	</modules>
 
