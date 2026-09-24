@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.customer.product.dto.ProductDTO;
 import com.customer.product.dto.ProductRequest;
+import com.customer.product.dto.UpdateProductRequest;
 import com.customer.product.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -40,25 +41,26 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProduct(productId));
     }
 
-    @GetMapping
-    public ResponseEntity<List<ProductDTO>> getProductsByName(@RequestParam("name") String name) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    @PatchMapping("/{productId}")
+    public ResponseEntity<ProductDTO> updateProduct(
+            @PathVariable("productId") UUID productId, @RequestBody UpdateProductRequest request) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(request, productId));
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable("productId") UUID productId) {
+        productService.deleteProduct(productId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @PutMapping("/{productId}")
-    public ResponseEntity<ProductDTO> updateProduct(
-            @PathVariable("productId") UUID productId, @RequestBody @Valid ProductRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
-    }
-
-    @PatchMapping("/{productId}")
     public ResponseEntity<ProductDTO> patchProduct(
             @PathVariable("productId") UUID productId, @RequestBody ProductRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
-    @DeleteMapping("/{productId}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable("productId") UUID productId) {
+    @GetMapping
+    public ResponseEntity<List<ProductDTO>> getProductsByName(@RequestParam("name") String name) {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 }

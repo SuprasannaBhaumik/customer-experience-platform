@@ -1,5 +1,7 @@
 package com.customer.product.config;
 
+import java.time.Duration;
+
 import org.springframework.boot.cache.autoconfigure.RedisCacheManagerBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +16,7 @@ public class CacheConfig {
     public RedisCacheManagerBuilderCustomizer redisCacheManagerBuilderCustomizer() {
         return builder -> builder.cacheDefaults(
             RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(Duration.ofMinutes(10))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair
                     .fromSerializer(GenericJacksonJsonRedisSerializer.create(
                         b -> b.enableUnsafeDefaultTyping())))

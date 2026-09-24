@@ -6,14 +6,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.customer.product.domain.Product;
-import com.customer.product.dto.InventoryStatus;
-import com.customer.product.dto.ProductDTO;
-import com.customer.product.dto.ProductRequest;
+import com.customer.product.dto.*;
 import com.customer.product.exception.ProductNotFoundException;
 import com.customer.product.repository.ProductRepository;
 
@@ -39,6 +39,21 @@ public class ProductService {
         newProduct.setInventoryStatus(InventoryStatus.IN_STOCK);
         
         return toDTO(productRepository.save(newProduct));
+    }
+
+    @Transactional
+    @CachePut(
+        cacheNames = "products",
+        key = "#productId"
+    )
+    public ProductDTO updateProduct(UpdateProductRequest updateProductRequest, UUID productId) {
+        
+        Product myProduct = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
+        myProduct.setName(updateProductRequest.name());
+        myProduct.setPrice(updateProductRequest.price());
+        myProduct.setInventoryStatus(updateProductRequest.status());
+       
+        return toDTO(myProduct);
     }
 
     @Transactional(readOnly = true)
@@ -67,6 +82,16 @@ public class ProductService {
         .orElseThrow( () -> new ProductNotFoundException(productId));
 
         return toDTO(product);
+    }
+
+    @Transactional 
+    @CacheEvict(
+        cacheNames = "products",
+        key = "#productId"
+    )
+    public void deleteProduct(UUID productId) {
+        Product myProduct = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
+        productRepository.delete(myProduct);    
     }
 
 
