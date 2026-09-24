@@ -9,7 +9,7 @@ For further reference, please consider the following sections:
 * [Spring Web](https://docs.spring.io/spring-boot/4.1.1/reference/web/servlet.html)
 * [Spring Data JPA](https://docs.spring.io/spring-boot/4.1.1/reference/data/sql.html#data.sql.jpa-and-spring-data)
 * [Validation](https://docs.spring.io/spring-boot/4.1.1/reference/io/validation.html)
-* [Spring Boot Actuator](https://docs.spring.io/spring-boot/4.1.1/reference/actuator/index.html)
+* [Spring Data Redis (Access+Driver)](https://docs.spring.io/spring-boot/4.1.1/reference/data/nosql.html#data.nosql.redis)
 
 ### Guides
 The following guides illustrate how to use some features concretely:
@@ -19,7 +19,7 @@ The following guides illustrate how to use some features concretely:
 * [Building REST services with Spring](https://spring.io/guides/tutorials/rest/)
 * [Accessing Data with JPA](https://spring.io/guides/gs/accessing-data-jpa/)
 * [Validation](https://spring.io/guides/gs/validating-form-input/)
-* [Building a RESTful Web Service with Spring Boot Actuator](https://spring.io/guides/gs/actuator-service/)
+* [Messaging with Redis](https://spring.io/guides/gs/messaging-redis/)
 
 ### Maven Parent overrides
 
