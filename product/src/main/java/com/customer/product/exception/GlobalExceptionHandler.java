@@ -1,6 +1,8 @@
 package com.customer.product.exception;
 
-import java.net.http.HttpRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.access.AccessDeniedException;
+
 import java.time.Instant;
 
 import org.springframework.http.HttpStatus;
@@ -14,16 +16,29 @@ import com.customer.product.dto.ApiError;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ProductNotFoundException.class)
-    public ResponseEntity<ApiError> handleProductNotFound(ProductNotFoundException exception, HttpRequest request) {
+    public ResponseEntity<ApiError> handleProductNotFound(ProductNotFoundException exception, HttpServletRequest request) {
 
         ApiError apiError = new ApiError(
             Instant.now(), 
-            HttpStatus.INTERNAL_SERVER_ERROR.value(), 
-            HttpStatus.INTERNAL_SERVER_ERROR.toString(),
+            HttpStatus.NOT_FOUND.value(), 
+            HttpStatus.NOT_FOUND.getReasonPhrase(),
             exception.getMessage(),
-            request.uri().getPath()
+            request.getRequestURI()
         );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiError);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiError);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleSecurityIssues(AccessDeniedException exception, HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+            Instant.now(), 
+            HttpStatus.FORBIDDEN.value(), 
+            HttpStatus.FORBIDDEN.getReasonPhrase(), 
+            exception.getMessage(), 
+            request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
 }
