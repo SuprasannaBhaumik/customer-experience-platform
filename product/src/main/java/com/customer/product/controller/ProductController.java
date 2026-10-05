@@ -31,34 +31,40 @@ public class ProductController {
     @Autowired
     ProductService productService;
 
+    //admin
     @PostMapping
     public ResponseEntity<ProductDTO> createProduct(@RequestBody @Valid ProductRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(request));
     }
 
+    //admin and user
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDTO> getProduct(@PathVariable("productId") UUID productId) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getProduct(productId));
     }
 
+    //admin
     @PatchMapping("/{productId}")
     public ResponseEntity<ProductDTO> updateProduct(
             @PathVariable("productId") UUID productId, @RequestBody UpdateProductRequest request) {
         return ResponseEntity.status(HttpStatus.OK).body(productService.updateProduct(request, productId));
     }
 
+    //admin
     @DeleteMapping("/{productId}")
     public ResponseEntity<Void> deleteProduct(@PathVariable("productId") UUID productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    //admin
     @PutMapping("/{productId}")
     public ResponseEntity<ProductDTO> patchProduct(
             @PathVariable("productId") UUID productId, @RequestBody ProductRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
+    //admin and user
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getProductsByName(@RequestParam("name") String name) {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();

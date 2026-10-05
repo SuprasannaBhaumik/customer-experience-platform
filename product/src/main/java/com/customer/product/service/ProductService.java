@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,8 @@ public class ProductService {
     private ProductRepository productRepository;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional 
     public ProductDTO createProduct(ProductRequest productRequest) {
         Product newProduct = new Product(
             productRequest.sku(), 
@@ -46,6 +49,7 @@ public class ProductService {
         cacheNames = "products",
         key = "#productId"
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public ProductDTO updateProduct(UpdateProductRequest updateProductRequest, UUID productId) {
         
         Product myProduct = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
@@ -57,16 +61,19 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Optional<Product> findBySkuIgnoreCase(String sku) {
         return productRepository.findBySkuIgnoreCase(sku);
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<Product> findByNameContainingIgnoreCase(String name) {
         return productRepository.findByNameContainingIgnoreCase(name);
     }
 
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public boolean existsBySkuIgnoreCase(String sku) {
         return productRepository.existsBySkuIgnoreCase(sku);
     }
@@ -76,6 +83,7 @@ public class ProductService {
         cacheNames = "products",
         key = "#productId"
     )
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public ProductDTO getProduct(UUID productId) {
 
         Product product = productRepository.findById(productId)
@@ -89,6 +97,7 @@ public class ProductService {
         cacheNames = "products",
         key = "#productId"
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public void deleteProduct(UUID productId) {
         Product myProduct = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         productRepository.delete(myProduct);    
