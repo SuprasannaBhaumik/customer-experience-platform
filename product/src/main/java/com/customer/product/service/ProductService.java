@@ -83,7 +83,8 @@ public class ProductService {
         cacheNames = "products",
         key = "#productId"
     )
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    @PreAuthorize ("hasAuthority('SCOPE_product.read')")
     public ProductDTO getProduct(UUID productId) {
 
         Product product = productRepository.findById(productId)

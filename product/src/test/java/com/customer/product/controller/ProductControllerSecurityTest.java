@@ -68,7 +68,7 @@ public class ProductControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser(username = "user", roles = "USER")
+    @WithMockUser(username = "user", authorities = {"ROLE_USER", "SCOPE_product.read"})
     void userCanReadProduct() throws Exception {
 
         UUID id = UUID.randomUUID();
@@ -88,13 +88,14 @@ public class ProductControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser ( username = "user", roles = "USER")
+    @WithMockUser ( username = "user", authorities = {"ROLE_USER", "SCOPE_product.write"})
     public void cannotCreateProductWithUserRole() throws Exception {
 
         mockMvc
             .perform(
                 post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("X-Authenticated-User", "test-user")
                 .content(MY_PRODUCT)
             )
             .andExpect(status().isForbidden());
@@ -103,7 +104,7 @@ public class ProductControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser ( username = "admin", roles = "ADMIN")
+    @WithMockUser ( username = "admin", authorities = {"ROLE_ADMIN", "SCOPE_product.write"})
     public void canCreateProductWithAdminRole() throws Exception {
 
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -112,6 +113,7 @@ public class ProductControllerSecurityTest {
             .perform(
                 post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
+                .header("X-Authenticated-User", "test-user")
                 .content(MY_PRODUCT)
             )
             .andExpect(status().isCreated())
