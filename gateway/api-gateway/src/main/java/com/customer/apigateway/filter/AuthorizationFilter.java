@@ -1,6 +1,7 @@
 package com.customer.apigateway.filter;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -19,9 +20,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
     private final WebClient webClient;
 
-    public AuthorizationFilter() {
+    public AuthorizationFilter(@Value("${authorizer.base-url:http://localhost:9001}") String authorizerBaseUrl) {
         this.webClient = WebClient.builder()
-            .baseUrl("http://localhost:9001")
+            .baseUrl(authorizerBaseUrl)
             .build();
     }
 
@@ -52,17 +53,14 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
             .retrieve()
             .bodyToMono(AuthorizationDecision.class)
             .flatMap(decision -> {
-                if(!decision.allowed()) {
-                    exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                    return exchange.getResponse().setComplete();
-                }
+                // the authorizer only answers 200 for an allowed request; denials arrive as 403 in onErrorResume
                 ServerHttpRequest request = exchange
                     .getRequest()
                     .mutate()
                     .headers( headers -> {
                         headers.set("X-Authenticated-User", decision.subject());
                         headers.set("X-Authenticated-Roles", String.join(",", decision.roles()));
-                        headers.set("X-Authenticate-Scopes", String.join(",", decision.scopes()));
+                        headers.set("X-Authenticated-Scopes", String.join(",", decision.scopes()));
                     })
                     .build();
                 return chain.filter(exchange.mutate().request(request).build());

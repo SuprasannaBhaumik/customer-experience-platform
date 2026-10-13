@@ -39,9 +39,8 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
-        //since we are using httpBasic the header WWW-Authenticate: Basic, other possible values
-        //include Bearer -> used for JWTs
-        response.setHeader("WWW-Authenticate", "Basic realm=\"product\"");
+        //the service accepts JWT bearer tokens, so tell the client to retry with one
+        response.setHeader("WWW-Authenticate", "Bearer realm=\"product\"");
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 

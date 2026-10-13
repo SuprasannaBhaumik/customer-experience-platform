@@ -57,7 +57,9 @@ public class SecurityConfiguration {
                     .requestMatchers("/who").authenticated()
             ) */
             
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())))        
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                .authenticationEntryPoint(entryPoint)) // invalid/expired token        
 
             //.httpBasic(basic -> basic.authenticationEntryPoint(entryPoint)) //wrong password
 

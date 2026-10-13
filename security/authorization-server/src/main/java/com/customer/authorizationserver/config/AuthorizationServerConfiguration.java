@@ -1,12 +1,20 @@
 package com.customer.authorizationserver.config;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -158,24 +166,52 @@ public class AuthorizationServerConfiguration {
     }
 
 
+    /**
+     * The signing key pair is kept on disk so tokens stay valid across restarts.
+     * It is created on first start; in production load it from a keystore or KMS instead.
+     */
     @Bean 
-    JWKSource<SecurityContext> jwkSource() {
+    JWKSource<SecurityContext> jwkSource(@Value("${authorization-server.key-dir:./keys}") Path keyDir) throws Exception {
         
-        KeyPair keyPair = generateRsaKey();
+        KeyPair keyPair = loadOrCreateRsaKey(keyDir);
 
         RSAPublicKey publicKey = (RSAPublicKey)keyPair.getPublic();
         RSAPrivateKey privateKey = (RSAPrivateKey)keyPair.getPrivate();
 
+        // the kid is derived from the key itself, so it is the same after every restart
         RSAKey rsaKey = 
                 new RSAKey.Builder(publicKey)
                 .privateKey(privateKey)
-                .keyID(UUID.randomUUID().toString())
+                .keyIDFromThumbprint()
                 .build();
         
         JWKSet jwkSet = new JWKSet(rsaKey);
 
         
         return new ImmutableJWKSet<>(jwkSet);
+    }
+
+    private static KeyPair loadOrCreateRsaKey(Path keyDir) throws Exception {
+        Path privateKeyFile = keyDir.resolve("signing-key.private");
+        Path publicKeyFile = keyDir.resolve("signing-key.public");
+
+        if (Files.exists(privateKeyFile) && Files.exists(publicKeyFile)) {
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            return new KeyPair(
+                keyFactory.generatePublic(new X509EncodedKeySpec(readBase64(publicKeyFile))),
+                keyFactory.generatePrivate(new PKCS8EncodedKeySpec(readBase64(privateKeyFile)))
+            );
+        }
+
+        KeyPair keyPair = generateRsaKey();
+        Files.createDirectories(keyDir);
+        Files.writeString(publicKeyFile, Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
+        Files.writeString(privateKeyFile, Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
+        return keyPair;
+    }
+
+    private static byte[] readBase64(Path file) throws IOException {
+        return Base64.getDecoder().decode(Files.readString(file).trim());
     }
 
     private static KeyPair generateRsaKey() {

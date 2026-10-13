@@ -6,5 +6,6 @@ spring:
       resourceServer:
         jwt:
           issuer-uri: http://localhost:9000
+          audiences: customer-api
 server:
   port: 8082

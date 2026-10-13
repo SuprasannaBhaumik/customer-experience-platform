@@ -19,7 +19,7 @@ public class AuthorizerService {
     public AuthorizationDecision authorize( Jwt jwt, String method, String path) {
 
         boolean allowed;
-        boolean pathStartCondition = path.startsWith("/api/products");
+        boolean pathStartCondition = path.startsWith("/api/v1/products");
         Set<String> adminMethodSet = Set.of("POST", "PUT", "PATCH", "DELETE");
        
         Set<String> scopes = extractScopes(jwt);
