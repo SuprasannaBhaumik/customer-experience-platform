@@ -1,5 +1,10 @@
 package com.customer.profile.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -10,10 +15,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity 
 @Table(name = "PROFILE_AUDIT")
 public class ProfileAudit {
-
 
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
@@ -28,38 +35,14 @@ public class ProfileAudit {
     @Column (name="activity_performed", nullable = false)
     private String activity;
 
-    protected ProfileAudit() {
-        //required for JPA
-    }
-
     public ProfileAudit(UUID customerId, String activityPerformed, Instant createdTime) {
         this.activity = activityPerformed;
         this.createdTime = createdTime;
         this.custmomerId = customerId;
     }
 
-    public Long getId() {
-        return this.id;
-    }
-
-    public String getActivity() {
-        return this.activity;
-    }
-
-    public Instant getCreatedTime() {
-        return this.createdTime;
-    }
-
     public UUID getCustomerId() {
         return this.custmomerId;
-    }
-
-    public void setCreatedTime( Instant time) {
-        this.createdTime = time;
-    }
-
-    public void setActivity(String activity) {
-        this.activity = activity;
     }
 
     public void setCustomerId(UUID customerId) {

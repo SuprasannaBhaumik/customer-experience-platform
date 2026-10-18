@@ -7,6 +7,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -66,10 +67,18 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
                 return chain.filter(exchange.mutate().request(request).build());
             })
             .onErrorResume(WebClientResponseException.class, ex -> {
-                // authorizer replies 401 for a bad token and 403 when access is denied
-                HttpStatus status = ex.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()
-                    ? HttpStatus.UNAUTHORIZED
-                    : HttpStatus.FORBIDDEN;
+                HttpStatusCode status = switch (ex.getStatusCode().value()) {
+                    case 400 -> HttpStatus.BAD_REQUEST;
+                    case 401 -> HttpStatus.UNAUTHORIZED;
+                    case 403 -> HttpStatus.FORBIDDEN;
+                    case 404 -> HttpStatus.NOT_FOUND;
+                    case 429 -> HttpStatus.TOO_MANY_REQUESTS;
+                    case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
+                    case 502 -> HttpStatus.BAD_GATEWAY;
+                    case 503 -> HttpStatus.SERVICE_UNAVAILABLE;
+                    case 504 -> HttpStatus.GATEWAY_TIMEOUT;
+                    default -> ex.getStatusCode();
+                };
                 exchange.getResponse().setStatusCode(status);
                 return exchange.getResponse().setComplete();
             });

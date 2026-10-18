@@ -1,5 +1,10 @@
 package com.customer.profile.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +19,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "customer_profile")
 public class CustomerProfile { 
@@ -48,42 +56,6 @@ public class CustomerProfile {
         preferences.remove(p);
         p.setCustomer(null);
     }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public UUID getCustomerId() {
-        return customerId;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public List<CustomerPreferences> getPreferences() {
-        return this.preferences;
-    }
-
-
-    //can be public also but dont want to expose to outside world to instantiate and create objects
-    protected CustomerProfile(){}
 
     public CustomerProfile(String firstName, String lastName, String email) {
         this.firstName = firstName;

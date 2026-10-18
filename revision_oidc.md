@@ -11,6 +11,7 @@
 1. [TL;DR](#1-tldr)
 2. [Vocabulary you must own](#2-vocabulary-you-must-own)
 3. [The big picture](#3-the-big-picture)
+   - [3.1 Architecture diagram](#31-architecture-diagram-from-the-whiteboard-sketch)
 4. [Flow 1 — Getting a token](#4-flow-1--getting-a-token-authorization-code-flow)
 5. [Flow 2 — Using a token](#5-flow-2--using-a-token-request-time)
 6. [Authorization Server deep dive (port 9000)](#6-authorization-server-deep-dive-port-9000)
@@ -118,6 +119,46 @@ Rule of thumb: **effective permission = scope ∩ role**. A token with `product.
 ```
 
 Key insight: **nobody calls the Authorization Server per request.** Resource servers verify the JWT signature locally with the public key they fetched once from `/oauth2/jwks`. That is the whole point of self-contained JWTs.
+
+### 3.1 Architecture diagram (from the whiteboard sketch)
+
+Interactive version: **[IdP and Authorizer Flow](https://claude.ai/artifact/9ZQo9u7PgmQukVxT8Aazra)** (redrawn from `architecuture_idp_authorizer.HEIC`).
+
+```mermaid
+flowchart LR
+    reg["client X1 registered<br/>scope: product.read"]:::note -.- idp
+    client["App Client (X1)<br/>:3000"]
+    idp["OIDC Identity Provider<br/>authorization-server :9000"]
+    gw["API Gateway<br/>:8080"]
+    authz["Authorizer<br/>:9001"]
+    deny["401 / 403<br/>returned by gateway"]:::deny
+    addr["address :8081<br/>@PreAuthorize with roles"]
+    prod["products :8082"]
+    ord["orders :8083"]
+
+    client -- "1. POST /oauth2/token<br/>Basic client_id:secret" --> idp
+    idp -- "2. signed JWT" --> client
+    client -- "3. Authorization: Bearer JWT<br/>/api/v1/address, /api/v1/payments …" --> gw
+    gw -- "4. every request:<br/>token + method + path" --> authz
+    authz -- "5. allow + identity" --> gw
+    authz -- "deny" --> deny
+    idp -. "JWKS public keys<br/>fetched once, cached" .-> authz
+    gw -- "6. route with trusted<br/>identity headers" --> addr
+    gw --> prod
+    gw --> ord
+
+    classDef note stroke-dasharray: 5 4
+    classDef deny stroke:#b42318,color:#b42318
+```
+
+| Outcome | Meaning |
+| --- | --- |
+| `401` | missing or invalid token |
+| `403` | valid token, missing scope/role |
+| `503` | authorizer unreachable (gateway fails closed) |
+| `200` | forwarded service response |
+
+> Ports above follow the sketch. In the `application.yml` files today, `profile` is on 8081 and `address` is on 8082 (same as `product`).
 
 ---
 
