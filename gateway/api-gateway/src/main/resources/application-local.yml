@@ -12,3 +12,7 @@ spring:
               uri: http://localhost:8084
               predicates:
                 - Path=/api/v1/customers/{customerId}/favorites/**
+            - id: product
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/v1/products/**

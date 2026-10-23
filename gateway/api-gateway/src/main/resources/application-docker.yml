@@ -12,3 +12,10 @@ spring:
               uri: http://favorites:8084
               predicates:
                 - Path=/api/v1/customers/{customerId}/favorites/**
+            - id: product
+              uri: http://product:8082
+              predicates:
+                - Path=/api/v1/products/**
+
+authorizer:
+  base-url: http://host.docker.internal:9001

@@ -1,10 +1,5 @@
 spring:
   application:
     name: product
-  security:
-    oauth2:
-      resourceServer:
-        jwt:
-          issuer-uri: http://localhost:9000
 server:
   port: 8082

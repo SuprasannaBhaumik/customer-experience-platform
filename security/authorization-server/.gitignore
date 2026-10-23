@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Signing keys (generated on first start) ###
+keys/

@@ -8,6 +8,7 @@ public record ProfileResponse(
     String firstName, 
     String lastName, 
     String email,
+    String username,
     List<CustomerPreferenceResponse> preferences
 ) {
 

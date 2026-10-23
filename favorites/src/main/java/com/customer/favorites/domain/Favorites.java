@@ -1,5 +1,10 @@
 package com.customer.favorites.domain;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -11,6 +16,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(
     name = "user_favorites",
@@ -39,45 +47,10 @@ public class Favorites {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    protected Favorites() {
-        // Required by JPA.
-    }
-
     public Favorites( UUID customerId, UUID productId, Instant createdAt) {
         this.customerId = customerId;
         this.productId = productId;
         this.createdAt = createdAt;
     }
 
-    public Long getFavoriteId() {
-        return favoriteId;
-    }
-
-    public void setFavoriteId(Long favoriteId) {
-        this.favoriteId = favoriteId;
-    }
-
-    public UUID getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(UUID customerId) {
-        this.customerId = customerId;
-    }
-
-    public UUID getProductId() {
-        return productId;
-    }
-
-    public void setProductId(UUID productId) {
-        this.productId = productId;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
 }

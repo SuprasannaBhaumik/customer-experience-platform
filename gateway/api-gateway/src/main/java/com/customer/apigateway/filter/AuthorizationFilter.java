@@ -1,11 +1,13 @@
 package com.customer.apigateway.filter;
 
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -19,9 +21,9 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
 
     private final WebClient webClient;
 
-    public AuthorizationFilter() {
+    public AuthorizationFilter(@Value("${authorizer.base-url:http://localhost:9001}") String authorizerBaseUrl) {
         this.webClient = WebClient.builder()
-            .baseUrl("http://localhost:9001")
+            .baseUrl(authorizerBaseUrl)
             .build();
     }
 
@@ -52,26 +54,31 @@ public class AuthorizationFilter implements GlobalFilter, Ordered {
             .retrieve()
             .bodyToMono(AuthorizationDecision.class)
             .flatMap(decision -> {
-                if(!decision.allowed()) {
-                    exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-                    return exchange.getResponse().setComplete();
-                }
+                // the authorizer only answers 200 for an allowed request; denials arrive as 403 in onErrorResume
                 ServerHttpRequest request = exchange
                     .getRequest()
                     .mutate()
                     .headers( headers -> {
                         headers.set("X-Authenticated-User", decision.subject());
                         headers.set("X-Authenticated-Roles", String.join(",", decision.roles()));
-                        headers.set("X-Authenticate-Scopes", String.join(",", decision.scopes()));
+                        headers.set("X-Authenticated-Scopes", String.join(",", decision.scopes()));
                     })
                     .build();
                 return chain.filter(exchange.mutate().request(request).build());
             })
             .onErrorResume(WebClientResponseException.class, ex -> {
-                // authorizer replies 401 for a bad token and 403 when access is denied
-                HttpStatus status = ex.getStatusCode().value() == HttpStatus.UNAUTHORIZED.value()
-                    ? HttpStatus.UNAUTHORIZED
-                    : HttpStatus.FORBIDDEN;
+                HttpStatusCode status = switch (ex.getStatusCode().value()) {
+                    case 400 -> HttpStatus.BAD_REQUEST;
+                    case 401 -> HttpStatus.UNAUTHORIZED;
+                    case 403 -> HttpStatus.FORBIDDEN;
+                    case 404 -> HttpStatus.NOT_FOUND;
+                    case 429 -> HttpStatus.TOO_MANY_REQUESTS;
+                    case 500 -> HttpStatus.INTERNAL_SERVER_ERROR;
+                    case 502 -> HttpStatus.BAD_GATEWAY;
+                    case 503 -> HttpStatus.SERVICE_UNAVAILABLE;
+                    case 504 -> HttpStatus.GATEWAY_TIMEOUT;
+                    default -> ex.getStatusCode();
+                };
                 exchange.getResponse().setStatusCode(status);
                 return exchange.getResponse().setComplete();
             });

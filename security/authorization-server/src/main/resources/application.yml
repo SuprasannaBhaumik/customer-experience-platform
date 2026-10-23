@@ -1,5 +1,14 @@
 spring:
   application:
     name: authorization-server
+  # users live in the profile service's database; the profile service owns the schema
+  datasource:
+    url: ${PROFILE_DB_URL:jdbc:postgresql://localhost:5432/profile}
+    username: ${PROFILE_DB_USERNAME:suprasannabhaumik}
+    password: ${PROFILE_DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
 server:
   port: 9000

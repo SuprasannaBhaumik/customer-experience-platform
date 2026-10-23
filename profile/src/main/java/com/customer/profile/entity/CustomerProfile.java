@@ -1,19 +1,36 @@
 package com.customer.profile.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
+import com.customer.profile.enums.Role;
+
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "customer_profile")
 public class CustomerProfile { 
@@ -30,6 +47,21 @@ public class CustomerProfile {
 
     @Column(unique = true, nullable = false)
     private String email;
+
+    // login name used by the authorization server
+    @Column(unique = true, nullable = false)
+    private String username;
+
+    // BCrypt hash; nullable so profiles created before login existed simply cannot sign in
+    @Column(name = "password_hash")
+    private String passwordHash;
+
+    // kept in its own table, one row per role; eager because every login needs them
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "customer_profile_roles", joinColumns = @JoinColumn(name = "customer_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(
         mappedBy = "customer",
@@ -49,45 +81,13 @@ public class CustomerProfile {
         p.setCustomer(null);
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public UUID getCustomerId() {
-        return customerId;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public List<CustomerPreferences> getPreferences() {
-        return this.preferences;
-    }
-
-
-    //can be public also but dont want to expose to outside world to instantiate and create objects
-    protected CustomerProfile(){}
-
-    public CustomerProfile(String firstName, String lastName, String email) {
+    public CustomerProfile(String firstName, String lastName, String email,
+            String username, String passwordHash, Set<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.username = username;
+        this.passwordHash = passwordHash;
+        this.roles = new HashSet<>(roles);
     }
 }

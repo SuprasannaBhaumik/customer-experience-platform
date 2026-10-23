@@ -1,6 +1,10 @@
 package com.customer.profile.entity;
 
-import com.customer.profile.enums.CustomerLanguage;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
+
 import com.customer.profile.enums.CustomerSize;
 
 import jakarta.persistence.Column;
@@ -14,6 +18,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity 
 @Table(name="customer_preferences")
 public class CustomerPreferences {
@@ -21,6 +28,7 @@ public class CustomerPreferences {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column (name="preference_id")
+    @Setter(AccessLevel.NONE)
     private Long preferenceId;
 
     @Enumerated(EnumType.STRING)
@@ -31,16 +39,8 @@ public class CustomerPreferences {
     @JoinColumn(name="customer_id")
     private CustomerProfile customer;
 
-    protected CustomerPreferences() {
-        //no arg constructor for the JPA
-    }
-
     public CustomerPreferences(CustomerSize size) {
         this.size = size;
-    }
-
-    public Long getPreferenceId() {
-        return this.preferenceId;
     }
 
     public void setPreferenceId(Long preferenceId) {
@@ -53,14 +53,6 @@ public class CustomerPreferences {
 
     public void setPreferenceId(CustomerSize customerSize) {
         this.size = customerSize;
-    }
-
-    public CustomerProfile getCustomer() {
-        return this.customer;
-    }
-
-    public void setCustomer(CustomerProfile customer) {
-        this.customer = customer;
     }
 
 }

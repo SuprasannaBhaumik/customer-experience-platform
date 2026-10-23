@@ -41,9 +41,11 @@ public class ProfileControllerTest {
         CreateProfileRequest request = new CreateProfileRequest(
                 "sam",
                 "brown",
-                "s.b@gmail.com");
+                "s.b@gmail.com",
+                "sambrown",
+                "password123");
 
-        ProfileResponse response = new ProfileResponse(customerId, "sam", "brown", "s.b@gmail.com", null);
+        ProfileResponse response = new ProfileResponse(customerId, "sam", "brown", "s.b@gmail.com", "sambrown", null);
 
         when(profileService.saveProfile(any(CreateProfileRequest.class))).thenReturn(response);
 
@@ -62,7 +64,9 @@ public class ProfileControllerTest {
         CreateProfileRequest request = new CreateProfileRequest(
                 "     ",
                 "b",
-                "s.b@gmail.com");
+                "s.b@gmail.com",
+                "sambrown",
+                "password123");
 
         mockMvc.perform(
                     post("/api/v1/profiles")

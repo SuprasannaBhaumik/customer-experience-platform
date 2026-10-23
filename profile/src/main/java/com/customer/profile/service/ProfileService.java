@@ -3,10 +3,12 @@ package com.customer.profile.service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +24,9 @@ import com.customer.profile.dto.UpdateProfileRequest;
 import com.customer.profile.entity.CustomerPreferences;
 import com.customer.profile.entity.CustomerProfile;
 import com.customer.profile.entity.ProfileAudit;
+import com.customer.profile.enums.Role;
 import com.customer.profile.exception.DuplicateEmailException;
+import com.customer.profile.exception.DuplicateUsernameException;
 import com.customer.profile.exception.PreferenceNotFoundException;
 import com.customer.profile.exception.ProfileNotFoundException;
 import com.customer.profile.repository.ProfileAuditRepository;
@@ -51,15 +55,25 @@ public class ProfileService {
     @Autowired 
     private PreferenceService preferenceService;
 
-    /** Creates a profile after checking for an existing email, ignoring letter case. */
+    @Autowired 
+    private PasswordEncoder passwordEncoder;
+
+    /**
+     * Creates a profile after checking for an existing email (ignoring letter case) and username.
+     * The password is stored only as a BCrypt hash and every new profile starts with the USER role.
+     */
     public ProfileResponse saveProfile(CreateProfileRequest request) {
         if (repository.findByEmailIgnoreCase(request.email()).isPresent()) {
             throw new DuplicateEmailException(request.email());
         }
+        if (repository.findByUsername(request.username()).isPresent()) {
+            throw new DuplicateUsernameException(request.username());
+        }
         CustomerProfile profile = repository
-                .save(new CustomerProfile(request.firstName(), request.lastName(), request.email()));
+                .save(new CustomerProfile(request.firstName(), request.lastName(), request.email(),
+                        request.username(), passwordEncoder.encode(request.password()), Set.of(Role.USER)));
         return new ProfileResponse(profile.getCustomerId(), profile.getFirstName(), profile.getLastName(),
-                profile.getEmail(), null);
+                profile.getEmail(), profile.getUsername(), null);
     }
 
     /** Returns basic profile fields, or throws if the customer does not exist. */
@@ -67,7 +81,7 @@ public class ProfileService {
         CustomerProfile profile = repository.findById(customerId)
                 .orElseThrow(() -> new ProfileNotFoundException(customerId));
         return new ProfileResponse(profile.getCustomerId(), profile.getFirstName(), profile.getLastName(),
-                profile.getEmail(), null);
+                profile.getEmail(), profile.getUsername(), null);
     }
 
     /** Looks up basic profile fields using the repository's email equality query. */
@@ -75,7 +89,7 @@ public class ProfileService {
         CustomerProfile profile = repository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Profile with the email not found"));
         return new ProfileResponse(profile.getCustomerId(), profile.getFirstName(), profile.getLastName(),
-                profile.getEmail(), null);
+                profile.getEmail(), profile.getUsername(), null);
     }
 
     /** Returns "failure" for a null ID; a non-null but unknown ID raises an exception. */
@@ -143,7 +157,7 @@ public class ProfileService {
              new CustomerPreferenceResponse(ep.getPreferenceId(), ep.getCustomerSize())
         ).toList();
         return new ProfileResponse(profile.getCustomerId(), profile.getFirstName(), profile.getLastName(),
-                profile.getEmail(), responsePreferences);
+                profile.getEmail(), profile.getUsername(), responsePreferences);
     }
 
     /** Uses a JPQL fetch join to load profiles and preferences, including profiles with none. */
@@ -160,6 +174,7 @@ public class ProfileService {
                 profile.getFirstName(), 
                 profile.getLastName(), 
                 profile.getEmail(), 
+                profile.getUsername(), 
                 prResponse
             );
         }).toList();
@@ -179,6 +194,7 @@ public class ProfileService {
                 profile.getFirstName(), 
                 profile.getLastName(), 
                 profile.getEmail(), 
+                profile.getUsername(), 
                 prResponse
             );
         }).toList();
@@ -252,6 +268,7 @@ public class ProfileService {
             customerProfile.getFirstName(), 
             customerProfile.getLastName(), 
             customerProfile.getEmail(), 
+            customerProfile.getUsername(), 
             prResponse
         );
     }
