@@ -24,6 +24,8 @@ public interface ProfileRepository  extends JpaRepository<CustomerProfile, UUID>
 
     Optional<CustomerProfile> findByEmailIgnoreCase(String email);
 
+    Optional<CustomerProfile> findByUsername(String username);
+
     @Query("select p from CustomerProfile p left join fetch p.preferences")
     List<CustomerProfile> findAllDetails_JPQL();
 

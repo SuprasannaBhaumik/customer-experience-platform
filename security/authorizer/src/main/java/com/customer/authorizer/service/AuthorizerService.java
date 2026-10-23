@@ -23,15 +23,15 @@ public class AuthorizerService {
         Set<String> adminMethodSet = Set.of("POST", "PUT", "PATCH", "DELETE");
        
         Set<String> scopes = extractScopes(jwt);
-        boolean canReadProducts = scopes.contains("product.read");
-        boolean canWriteProducts = scopes.contains("product.write");
+        boolean canRead = scopes.contains("customer.read");
+        boolean canWrite = scopes.contains("customer.write");
        
         List<String> roles = Optional.ofNullable(jwt.getClaimAsStringList("roles")).orElse(List.of());
 
         if ("GET".equals(method) && pathStartCondition) {
-            allowed = canReadProducts;
+            allowed = canRead;
         } else if (adminMethodSet.contains(method) && pathStartCondition) {
-            allowed = canWriteProducts || roles.contains("ADMIN");
+            allowed = canWrite || roles.contains("ADMIN");
         } else {
             allowed = false;
         }
@@ -53,14 +53,14 @@ public class AuthorizerService {
             claim = jwt.getClaim("scp");
         }
 
-        // Example: "product.read product.write"
+        // Example: "customer.read customer.write"
         if (claim instanceof String scopeString) {
             return Arrays.stream(scopeString.trim().split("\\s+"))
                     .filter(scope -> !scope.isBlank())
                     .collect(Collectors.toSet());
         }
 
-        // Example: ["product.read", "product.write"]
+        // Example: ["customer.read", "customer.write"]
         if (claim instanceof Collection<?> scopeList) {
             return scopeList.stream()
                     .filter(String.class::isInstance)

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import com.customer.profile.dto.CreateProfileRequest;
 import com.customer.profile.entity.CustomerPreferences;
 import com.customer.profile.entity.CustomerProfile;
 import com.customer.profile.enums.CustomerSize;
+import com.customer.profile.enums.Role;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = Replace.NONE)
@@ -32,15 +34,19 @@ public class ProfileRepositoryTest {
             new CreateProfileRequest(
                 "suprasanna", 
                 "bhaumik", 
-                "suprasanna.bhaumik86@gmail.com"
+                "suprasanna.bhaumik86@gmail.com",
+                "suprasanna",
+                "password123"
             );
         
-        repository.save(new CustomerProfile(profileRequest.firstName(), profileRequest.lastName(), profileRequest.email()));
+        repository.save(new CustomerProfile(profileRequest.firstName(), profileRequest.lastName(), profileRequest.email(),
+                profileRequest.username(), "{bcrypt-hash}", Set.of(Role.USER)));
 
         Optional<CustomerProfile> customerProfile = repository.findByEmail(profileRequest.email());
         
         assertTrue(customerProfile.isPresent());
         assertEquals(customerProfile.get().getEmail(), profileRequest.email());
+        assertEquals(Set.of(Role.USER), customerProfile.get().getRoles());
 
     }
 
@@ -48,7 +54,8 @@ public class ProfileRepositoryTest {
     @Test 
     void shouldPersistProfileWithPreferences() {
     
-        CustomerProfile customer = new CustomerProfile("Suprasnana", "bhaumik", "s.b@gmail.com");
+        CustomerProfile customer = new CustomerProfile("Suprasnana", "bhaumik", "s.b@gmail.com",
+                "suprasnana", "{bcrypt-hash}", Set.of(Role.USER, Role.ADMIN));
         customer.addPreference(new CustomerPreferences(CustomerSize.L));
         customer.addPreference(new CustomerPreferences(CustomerSize.XXL));
         repository.saveAndFlush(customer);

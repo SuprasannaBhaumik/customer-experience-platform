@@ -6,17 +6,25 @@ import jakarta.validation.constraints.Size;
 
 public record CreateProfileRequest(
 
-    @NotBlank(message = "Name cannot be blank") 
+    @NotBlank(message = "First Name cannot be blank") 
     @Size(min = 2, max = 50, message = "Please enter first name between 2 to 50 characters")
     String firstName,
     
-    @NotBlank(message = "Name cannot be blank") 
+    @NotBlank(message = "Last Name cannot be blank") 
     @Size(min = 2, max = 50, message = "Please enter last name between 2 to 50 characters")
     String lastName,
 
     @NotBlank(message = "email cannot be blank") 
     @Email( message = "email must be valid")
-    String email
+    String email,
+
+    @NotBlank(message = "username cannot be blank")
+    @Size(min = 3, max = 50, message = "Please enter username between 3 to 50 characters")
+    String username,
+
+    @NotBlank(message = "password cannot be blank")
+    @Size(min = 8, max = 72, message = "Please enter password between 8 to 72 characters")
+    String password
 ) {
 
 }

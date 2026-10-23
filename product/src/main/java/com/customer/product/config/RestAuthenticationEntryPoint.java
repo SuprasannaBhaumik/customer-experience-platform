@@ -37,10 +37,9 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
             request.getRequestURI()
         );
         
+        // no WWW-Authenticate challenge: this service does not accept bearer tokens itself,
+        // a 401 here means the request did not come through the gateway with identity headers
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-
-        //the service accepts JWT bearer tokens, so tell the client to retry with one
-        response.setHeader("WWW-Authenticate", "Bearer realm=\"product\"");
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 

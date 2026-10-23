@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +28,8 @@ import com.customer.product.repository.ProductRepository;
 // Full context so the real ProductService (and its @PreAuthorize rules) is used.
 // The repository is mocked, so the datasource/JPA auto-configurations are excluded
 // and caching is switched off to keep the test free of Postgres and Redis.
+// Identity is sent the way the gateway sends it (X-Authenticated-* headers), so the
+// real GatewayAuthenticationFilter builds the Authentication that @PreAuthorize reads.
 @SpringBootTest(properties = {
     "spring.autoconfigure.exclude="
         + "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration,"
@@ -68,7 +69,16 @@ public class ProductControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser(username = "user", authorities = {"ROLE_USER", "SCOPE_product.read"})
+    public void rolesWithoutUserHeaderShouldReceive401() throws Exception {
+
+        mockMvc.perform(
+            get("/api/v1/products/{id}", UUID.randomUUID())
+                .header("X-Authenticated-Roles", "ADMIN")
+                .header("X-Authenticated-Scopes", "customer.read")
+        ).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void userCanReadProduct() throws Exception {
 
         UUID id = UUID.randomUUID();
@@ -79,7 +89,12 @@ public class ProductControllerSecurityTest {
         when(productRepository.findById(id)).thenReturn(Optional.of(product));
 
         mockMvc
-            .perform(get("/api/v1/products/{id}", id))
+            .perform(
+                get("/api/v1/products/{id}", id)
+                .header("X-Authenticated-User", "user")
+                .header("X-Authenticated-Roles", "USER")
+                .header("X-Authenticated-Scopes", "customer.read")
+            )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.productId").value(id.toString()))
             .andExpect(jsonPath("$.sku").value(SKU))
@@ -88,14 +103,27 @@ public class ProductControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser ( username = "user", authorities = {"ROLE_USER", "SCOPE_product.write"})
+    void readWithoutReadScopeShouldReceive403() throws Exception {
+
+        mockMvc
+            .perform(
+                get("/api/v1/products/{id}", UUID.randomUUID())
+                .header("X-Authenticated-User", "user")
+                .header("X-Authenticated-Roles", "USER")
+            )
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
     public void cannotCreateProductWithUserRole() throws Exception {
 
         mockMvc
             .perform(
                 post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("X-Authenticated-User", "test-user")
+                .header("X-Authenticated-User", "user")
+                .header("X-Authenticated-Roles", "USER")
+                .header("X-Authenticated-Scopes", "customer.write")
                 .content(MY_PRODUCT)
             )
             .andExpect(status().isForbidden());
@@ -104,7 +132,6 @@ public class ProductControllerSecurityTest {
     }
 
     @Test
-    @WithMockUser ( username = "admin", authorities = {"ROLE_ADMIN", "SCOPE_product.write"})
     public void canCreateProductWithAdminRole() throws Exception {
 
         when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -113,7 +140,9 @@ public class ProductControllerSecurityTest {
             .perform(
                 post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
-                .header("X-Authenticated-User", "test-user")
+                .header("X-Authenticated-User", "admin")
+                .header("X-Authenticated-Roles", "ADMIN")
+                .header("X-Authenticated-Scopes", "customer.write")
                 .content(MY_PRODUCT)
             )
             .andExpect(status().isCreated())

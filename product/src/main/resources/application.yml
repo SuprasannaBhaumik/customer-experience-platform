@@ -1,12 +1,6 @@
 spring:
   application:
     name: product
-  security:
-    oauth2:
-      resourceServer:
-        jwt:
-          issuer-uri: ${JWT_ISSUER_URI:http://localhost:9000}
-          audiences: customer-api
 server:
   port: 8082
 

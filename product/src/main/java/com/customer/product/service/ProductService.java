@@ -49,7 +49,7 @@ public class ProductService {
         cacheNames = "products",
         key = "#productId"
     )
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ProductDTO updateProduct(UpdateProductRequest updateProductRequest, UUID productId) {
         
         Product myProduct = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
@@ -61,19 +61,16 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public Optional<Product> findBySkuIgnoreCase(String sku) {
         return productRepository.findBySkuIgnoreCase(sku);
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public List<Product> findByNameContainingIgnoreCase(String name) {
         return productRepository.findByNameContainingIgnoreCase(name);
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public boolean existsBySkuIgnoreCase(String sku) {
         return productRepository.existsBySkuIgnoreCase(sku);
     }
@@ -84,7 +81,7 @@ public class ProductService {
         key = "#productId"
     )
     //@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @PreAuthorize ("hasAuthority('SCOPE_product.read')")
+    @PreAuthorize ("hasAuthority('SCOPE_customer.read')")
     public ProductDTO getProduct(UUID productId) {
 
         Product product = productRepository.findById(productId)
@@ -98,7 +95,7 @@ public class ProductService {
         cacheNames = "products",
         key = "#productId"
     )
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public void deleteProduct(UUID productId) {
         Product myProduct = productRepository.findById(productId).orElseThrow(() -> new ProductNotFoundException(productId));
         productRepository.delete(myProduct);    
