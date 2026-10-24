@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${ORDER_DB_URL:jdbc:postgresql://localhost:5432/order}
+    username: ${ORDER_DB_USERNAME:suprasannabhaumik}
+    password: ${ORDER_DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  services:
+    product:
+      base-url: http://localhost:8082
+      connect-timeout: 2s
+      read-timeout: 3s

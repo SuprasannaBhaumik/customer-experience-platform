@@ -80,7 +80,6 @@ public class ProductService {
         cacheNames = "products",
         key = "#productId"
     )
-    //@PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     @PreAuthorize ("hasAuthority('SCOPE_customer.read')")
     public ProductDTO getProduct(UUID productId) {
 

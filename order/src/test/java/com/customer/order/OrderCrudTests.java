@@ -7,6 +7,7 @@ import com.customer.order.domain.OrderItem;
 import com.customer.order.domain.OrderItemLink;
 import com.customer.order.domain.OrderStatus;
 import java.util.UUID;
+import com.customer.order.util.RequestIdentityFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +29,10 @@ class OrderCrudTests {
 
     private final UUID customerId = UUID.randomUUID();
 
+    private RequestIdentity identity(UUID subject) {
+        return RequestIdentityFactory.from(subject.toString(), "order:read");
+    }
+
     private OrderResponse seedOrder(int quantity) {
         Order order = new Order();
         order.setCustomerId(customerId);
@@ -43,6 +48,7 @@ class OrderCrudTests {
         item.setProductName("Book");
         item.setQuantity(quantity);
         item.setUnitPrice(new BigDecimal("12.50"));
+        item.setLineTotal(item.getUnitPrice().multiply(BigDecimal.valueOf(quantity)));
         items.save(item);
 
         OrderItemLink link = new OrderItemLink();
@@ -51,7 +57,7 @@ class OrderCrudTests {
         links.save(link);
         entityManager.flush();
         entityManager.clear();
-        return service.getOrder(customerId, new OrderRequest(order.getOrderId()));
+        return service.getOrder(customerId, new OrderRequest(order.getOrderId()), identity(customerId));
     }
 
     @Test
@@ -62,8 +68,8 @@ class OrderCrudTests {
         entityManager.clear();
         UUID oldItemId = created.orderItems().getFirst().getOrderItemId();
         assertEquals(1, links.findByOrderId(created.orderId()).size());
-        assertEquals(oldItemId, service.getOrder(customerId, new OrderRequest(created.orderId())).orderItems().getFirst().getOrderItemId());
-        assertTrue(service.getOrders(customerId).stream().anyMatch(o -> o.orderId().equals(created.orderId())));
+        assertEquals(oldItemId, service.getOrder(customerId, new OrderRequest(created.orderId()), identity(customerId)).orderItems().getFirst().getOrderItemId());
+        assertTrue(service.getOrders(customerId, identity(customerId)).stream().anyMatch(o -> o.orderId().equals(created.orderId())));
 
 
     }
@@ -71,15 +77,15 @@ class OrderCrudTests {
     @Test
     void missingOrdersReturnNotFound() {
         UUID id = UUID.randomUUID();
-        assertThrows(OrderNotFoundException.class, () -> service.getOrder(customerId, new OrderRequest(id)));
+        assertThrows(OrderNotFoundException.class, () -> service.getOrder(customerId, new OrderRequest(id), identity(customerId)));
     }
 
     @Test
     void customersCannotReadOtherCustomersOrders() {
         var created = seedOrder(1);
         UUID otherCustomer = UUID.randomUUID();
-        assertTrue(service.getOrders(otherCustomer).isEmpty());
+        assertTrue(service.getOrders(otherCustomer, identity(otherCustomer)).isEmpty());
         assertThrows(OrderNotFoundException.class,
-            () -> service.getOrder(otherCustomer, new OrderRequest(created.orderId())));
+            () -> service.getOrder(otherCustomer, new OrderRequest(created.orderId()), identity(otherCustomer)));
     }
 }
