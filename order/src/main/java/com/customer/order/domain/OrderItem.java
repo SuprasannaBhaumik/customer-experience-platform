@@ -14,6 +14,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "order_items")
 public class OrderItem {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID orderItemId;
@@ -29,5 +30,12 @@ public class OrderItem {
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal unitPrice;
+
+    @Column(
+        nullable = false,
+        precision = 14,
+        scale = 2
+    )
+    private BigDecimal lineTotal;
 
 }

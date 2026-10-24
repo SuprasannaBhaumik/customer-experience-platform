@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: ${ORDER_DB_URL:jdbc:postgresql://order-db:5432/order_db}
+    username: ${ORDER_DB_USERNAME:order_user}
+    password: ${ORDER_DB_PASSWORD:order_password}
+
+app:
+  services:
+    product:
+      base-url: http://product:8082
+      connect-timeout: 2s
+      read-timeout: 3s
