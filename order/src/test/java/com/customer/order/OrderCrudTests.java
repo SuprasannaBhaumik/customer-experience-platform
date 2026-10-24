@@ -66,9 +66,9 @@ class OrderCrudTests {
         assertEquals(new BigDecimal("25.00"), created.totalAmount());
         entityManager.flush();
         entityManager.clear();
-        UUID oldItemId = created.orderItems().getFirst().getOrderItemId();
+        UUID oldItemId = created.orderItems().getFirst().orderItemId();
         assertEquals(1, links.findByOrderId(created.orderId()).size());
-        assertEquals(oldItemId, service.getOrder(customerId, new OrderRequest(created.orderId()), identity(customerId)).orderItems().getFirst().getOrderItemId());
+        assertEquals(oldItemId, service.getOrder(customerId, new OrderRequest(created.orderId()), identity(customerId)).orderItems().getFirst().orderItemId());
         assertTrue(service.getOrders(customerId, identity(customerId)).stream().anyMatch(o -> o.orderId().equals(created.orderId())));
 
 
