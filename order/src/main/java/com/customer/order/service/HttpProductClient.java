@@ -13,6 +13,7 @@ import com.customer.order.exception.ProductServiceUnavailableException;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 
 @Component
 public class HttpProductClient implements ProductClient {
@@ -24,6 +25,7 @@ public class HttpProductClient implements ProductClient {
     }
 
     @Override
+    @Retry(name="product")
     @CircuitBreaker(name = "product", fallbackMethod = "productUnavailable")
     public ProductResponse getProduct(UUID productId, RequestIdentity identity) {
         try {

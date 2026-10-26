@@ -22,3 +22,14 @@ resilience4j:
         ignore-exceptions:
           - com.customer.order.exception.ProductNotAvailableForOrderException
         register-health-indicator: true
+  retry:
+    instances:
+      product:
+        max-attempts: 3
+        wait-duration: 500ms
+        retry-exceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.HttpServerErrorException
+        ignore-exceptions:
+          - com.customer.order.exception.ProductNotAvailableForOrderException
