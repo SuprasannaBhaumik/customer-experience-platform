@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import com.customer.order.domain.OrderItem;
+
 import com.customer.order.domain.OrderStatus;
 
 public record OrderResponse(
@@ -15,5 +15,5 @@ public record OrderResponse(
     BigDecimal totalAmount,
     Instant createdAt,
     Instant updatedAt,
-    List<OrderItem> orderItems
+    List<OrderItemResponse> orderItems
 ) {}

@@ -5,6 +5,7 @@ package com.customer.order.dto;
  */
 public enum InventoryStatus {
     OUT_OF_STOCK,
-    AVAILABLE
+    IN_STOCK,
+    LOW_STOCK
 
 }

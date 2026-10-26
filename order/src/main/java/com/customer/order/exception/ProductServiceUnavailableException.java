@@ -6,4 +6,8 @@ public class ProductServiceUnavailableException extends RuntimeException {
         super("Product service unreachable");
     }
 
+    public ProductServiceUnavailableException(Throwable cause) {
+        super("Product service unreachable", cause);
+    }
+
 }

@@ -2,7 +2,6 @@ package com.customer.profile.service;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -12,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.customer.profile.dto.AuditRequest;
 import com.customer.profile.dto.CreateProfileRequest;
 import com.customer.profile.dto.CustomerPreferenceRequest;
 import com.customer.profile.dto.CustomerPreferenceResponse;
@@ -110,8 +108,6 @@ public class ProfileService {
             CustomerProfile customer = repository.findById(customerId)
                     .orElseThrow(() -> new ProfileNotFoundException(customerId));
             customer.setFirstName(request.firstName());
-            // TODO: This calls setFirstName again, overwriting it with the last name.
-            // Use setLastName here when correcting the update behavior.
             customer.setFirstName(request.lastName());
             customer.setEmail(request.email());
             repository.save(customer);

@@ -39,6 +39,9 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+    /* This is not required here as orders will still return irrespective of product rest api failing
+        and since controller is not going to throw these exceptions defined below: have commented this 
+    
     @ExceptionHandler(ProductNotAvailableForOrderException.class)
     public ResponseEntity<ApiError> handleProductNotFoundForOrder(ProductNotAvailableForOrderException exception, HttpServletRequest request) {
         ApiError error = new ApiError(
@@ -61,5 +64,6 @@ public class GlobalExceptionHandler {
             request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
-    }
+    } 
+    */
 }
