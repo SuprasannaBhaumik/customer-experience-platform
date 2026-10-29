@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: ${PAYMENT_DB_URL:jdbc:postgresql://payment-db:5432/payment_db}
+    username: ${PAYMENT_DB_USERNAME:payment_user}
+    password: ${PAYMENT_DB_PASSWORD:payment_password}

@@ -17,7 +17,7 @@ import com.customer.order.service.OrderService;
 import com.customer.order.util.RequestIdentityFactory;
 
 @RestController
-@RequestMapping("/api/v1/order")
+@RequestMapping("/api/v1/orders")
 public class OrderController {
 
     @Autowired

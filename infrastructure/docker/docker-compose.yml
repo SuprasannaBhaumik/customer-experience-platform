@@ -68,6 +68,23 @@ services:
       timeout: 3s
       retries: 10
 
+  payment-db:
+    image: postgres:17
+    container_name: payment_db
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: payment_user
+      POSTGRES_PASSWORD: payment_password
+    ports:
+      - "5437:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U payment_user -d payment_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   profile:
     build:
       context: ../../profile
@@ -101,11 +118,22 @@ services:
   order:
     build:
       context: ../../order
-      environment:
-        SPRING_PROFILES_ACTIVE: docker
-      depends_on:
-        order-db:
-          condition: service_healthy
+    container_name: order
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      order-db:
+        condition: service_healthy
+
+  payment:
+    build:
+      context: ../../payment
+    container_name: payment
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      payment-db:
+        condition: service_healthy
 
   api-gateway:
     build:
@@ -119,6 +147,8 @@ services:
       - profile
       - favorites
       - product
+      - order
+      - payment
 
   redis:  
     image: redis:7
@@ -130,3 +160,5 @@ volumes:
   profile-db-data:
   favorites-db-data:
   product-db-data:
+  order-db-data:
+  payment-db-data:

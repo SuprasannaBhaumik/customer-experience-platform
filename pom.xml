@@ -23,6 +23,7 @@
 		<module>order</module>
 		<module>favorites</module>
 		<module>product</module>
+		<module>payment</module>
 		<module>gateway/api-gateway</module>
 		<module>security/authorization-server</module>
 		<module>security/authorizer</module>
