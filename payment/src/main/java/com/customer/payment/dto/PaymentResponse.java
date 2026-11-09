@@ -9,8 +9,11 @@ import com.customer.payment.domain.PaymentStatus;
 public record PaymentResponse(
     UUID paymentId,
     UUID orderId,
+    UUID customerId,
     BigDecimal amount,
     String currency,
     PaymentStatus status,
+    String providerReference,
+    String failureCode,
     Instant createdAt
 ) {}

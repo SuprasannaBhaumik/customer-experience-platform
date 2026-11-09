@@ -14,6 +14,16 @@ import com.customer.payment.filter.GatewayAuthenticationFilter;
 @EnableMethodSecurity
 public class PaymentConfig {
 
+    /**
+     * This bean will provide the configuration as below
+     * 1. disable csrf
+     * 2. stateless sessions
+     * 3. allow actuator endpoints -> /health and /info to bypass security, everything else needs authentication
+     * 4. inject security context obtained from authorizer service for method security
+     * @param security
+     * @return
+     * @throws Exception
+     */
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
 

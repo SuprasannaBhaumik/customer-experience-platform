@@ -38,9 +38,12 @@ public class PaymentService {
         return new PaymentResponse(
             payment.getPaymentId(),
             payment.getOrderId(),
+            payment.getCustomerId(), 
             payment.getAmount(),
             payment.getCurrency(),
             payment.getStatus(),
+            payment.getProviderReference(), 
+            payment.getFailureCode(), 
             payment.getCreatedAt()
         );
     }

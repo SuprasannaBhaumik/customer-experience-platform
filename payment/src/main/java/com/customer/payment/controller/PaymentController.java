@@ -1,36 +1,51 @@
 package com.customer.payment.controller;
 
-import java.util.List;
-import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.customer.payment.domain.PaymentStatus;
+import com.customer.payment.dto.CreatePaymentRequest;
 import com.customer.payment.dto.PaymentResponse;
-import com.customer.payment.service.PaymentService;
+import com.customer.payment.service.PaymentApplicationService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
 
-    @Autowired
-    private PaymentService paymentService;
+    @Autowired 
+    private PaymentApplicationService paymentApplicationService;
 
-    @GetMapping
-    public List<PaymentResponse> getPayments(@RequestHeader("X-Authenticated-User") String customerId) {
-        return paymentService.getPayments(UUID.fromString(customerId));
-    }
+    @PostMapping 
+    public ResponseEntity<PaymentResponse> processPayment(
+        @RequestHeader("Idempotency-key") String idempotencyKey, 
+        @RequestHeader("X-Autheticated-User") String subject,
+        @Valid @RequestBody CreatePaymentRequest paymentRequest
+    ) {
 
-    @GetMapping("/{paymentId}")
-    public PaymentResponse getPayment(
-        @RequestHeader("X-Authenticated-User") String customerId,
-        @PathVariable UUID paymentId) {
-
-            return paymentService.getPayment(UUID.fromString(customerId), paymentId);
+        PaymentResponse paymentResponse = 
+            paymentApplicationService.createPayment(
+                subject, 
+                idempotencyKey, 
+                paymentRequest
+            );
+        
+        HttpStatus status =
+            paymentResponse.status()
+                == PaymentStatus.SUCCEEDED
+                ? HttpStatus.CREATED
+                : HttpStatus.UNPROCESSABLE_ENTITY;
+        
+        return ResponseEntity
+            .status(status)
+            .body(paymentResponse);
     }
 
 }
