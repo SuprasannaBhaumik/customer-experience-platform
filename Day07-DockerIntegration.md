@@ -1,24 +1,5 @@
 # Day 07 — Favorites Service, API Gateway, Docker Integration, and Week 1 Assessment
 
-## Recommended Git Branch
-
-```text
-day-07-favorites-gateway
-```
-
-Alternative:
-
-```text
-day-07-favorites-api-gateway
-```
-
-Recommended choice:
-
-```text
-day-07-favorites-gateway
-```
-
----
 
 # Objective
 

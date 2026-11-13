@@ -3,7 +3,6 @@ package com.customer.payment.exception;
 import java.time.Instant;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,52 +15,52 @@ import jakarta.servlet.http.HttpServletRequest;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(PaymentNotFoundException.class)
-    public ResponseEntity<ApiError> handlePaymentNotFound(PaymentNotFoundException exception, HttpServletRequest request) {
-        ApiError error = new ApiError(
-            Instant.now(),
-            HttpStatus.NOT_FOUND.value(),
-            HttpStatus.NOT_FOUND.getReasonPhrase(),
-            exception.getMessage(),
-            request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    @ExceptionHandler(MissingIdempotencyKeyException.class)
+    public ResponseEntity<ApiError> handle_IdempotencyKey_Missing(MissingIdempotencyKeyException exception, HttpServletRequest request) {
+        return apiErrorHandler(HttpStatus.BAD_REQUEST, exception, request);
     }
 
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ApiError> handleSecurityIssues(AccessDeniedException exception, HttpServletRequest request) {
-        ApiError error = new ApiError(
-            Instant.now(),
-            HttpStatus.FORBIDDEN.value(),
-            HttpStatus.FORBIDDEN.getReasonPhrase(),
-            exception.getMessage(),
-            request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    @ExceptionHandler(InvalidIdempotencyKeyException.class)
+    public ResponseEntity<ApiError> handle_IdempotencyKey_Invalid(InvalidIdempotencyKeyException exception, HttpServletRequest request) {
+        return apiErrorHandler(HttpStatus.BAD_REQUEST, exception, request);
+    }
+    
+    @ExceptionHandler(IdempotencyKeyConflictException.class)
+    public ResponseEntity<ApiError> handle_IdempotencyKey_Conflict(IdempotencyKeyConflictException exception, HttpServletRequest request) {
+        return apiErrorHandler(HttpStatus.CONFLICT, exception, request);
     }
 
     @ExceptionHandler(PaymentAlreadyInProgressException.class)
-    public ResponseEntity<ApiError> handlePaymentInProgress(PaymentAlreadyInProgressException exception, HttpServletRequest request) {
-        ApiError error = new ApiError(
-            Instant.now(),
-            HttpStatus.UNPROCESSABLE_ENTITY.value(),
-            HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
-            exception.getMessage(),
-            request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+    public ResponseEntity<ApiError> handle_Payment_InProgress(PaymentAlreadyInProgressException exception, HttpServletRequest request) {
+        return apiErrorHandler(HttpStatus.CONFLICT, exception, request);
     }
 
     @ExceptionHandler(PreviousPaymentAttemptFailedException.class)
-    public ResponseEntity<ApiError> handlePaymentFailed(PreviousPaymentAttemptFailedException exception, HttpServletRequest request) {
+    public ResponseEntity<ApiError> handle_Payment_Failed(PreviousPaymentAttemptFailedException exception, HttpServletRequest request) {
+        return apiErrorHandler(HttpStatus.CONFLICT, exception, request);
+    }
+
+    @ExceptionHandler(PaymentNotFoundException.class)
+    public ResponseEntity<ApiError> handle_Payment_NotFound(PaymentNotFoundException exception, HttpServletRequest request) {
+        return apiErrorHandler(HttpStatus.NOT_FOUND, exception, request);
+    }
+
+    //ProviderUnavailableException -> 503
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiError> handleSecurityIssues(AccessDeniedException exception, HttpServletRequest request) {
+        return apiErrorHandler(HttpStatus.FORBIDDEN, exception, request);
+    }
+    
+    private ResponseEntity<ApiError> apiErrorHandler(HttpStatus httpStatus, RuntimeException exception, HttpServletRequest request) {
         ApiError error = new ApiError(
             Instant.now(),
-            HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+            httpStatus.value(),
+            httpStatus.getReasonPhrase(),
             exception.getMessage(),
-            request.getRequestURI()
-        );
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+            request.getRequestURI());
+        return ResponseEntity.status(httpStatus).body(error);
+
     }
 }
     

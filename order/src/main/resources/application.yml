@@ -4,6 +4,16 @@ server:
 spring:
   application:
     name: order
+  profiles:
+    # used only when no profile is active; docker-compose sets SPRING_PROFILES_ACTIVE=docker
+    default: local
+
+app:
+  services:
+    product:
+      # base-url is environment-specific and lives in the profile files
+      connect-timeout: 2s
+      read-timeout: 3s
 
 
 resilience4j:

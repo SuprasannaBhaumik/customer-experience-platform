@@ -23,8 +23,8 @@ public class AuthorizerService {
         Set<String> adminMethodSet = Set.of("POST", "PUT", "PATCH", "DELETE");
        
         Set<String> scopes = extractScopes(jwt);
-        boolean canRead = scopes.contains("customer.read");
-        boolean canWrite = scopes.contains("customer.write");
+        boolean canRead = scopes.contains("customer.read") || scopes.contains("payment.read");
+        boolean canWrite = scopes.contains("customer.write") || scopes.contains("payment.write");
        
         List<String> roles = Optional.ofNullable(jwt.getClaimAsStringList("roles")).orElse(List.of());
 

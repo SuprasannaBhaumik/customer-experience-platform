@@ -91,6 +91,8 @@ services:
     container_name: profile
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8081:8081"
     depends_on:
       profile-db:
         condition: service_healthy
@@ -101,6 +103,8 @@ services:
     container_name: favorites
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8084:8084"
     depends_on:
       favorites-db:
         condition: service_healthy
@@ -111,6 +115,8 @@ services:
     container_name: product
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8082:8082"
     depends_on:
       product-db:
         condition: service_healthy
@@ -121,6 +127,8 @@ services:
     container_name: order
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8083:8083"
     depends_on:
       order-db:
         condition: service_healthy
@@ -131,9 +139,20 @@ services:
     container_name: payment
     environment:
       SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8085:8085"
     depends_on:
       payment-db:
         condition: service_healthy
+
+  address:
+    build:
+      context: ../../address
+    container_name: address
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    ports:
+      - "8086:8086"
 
   api-gateway:
     build:
@@ -149,6 +168,7 @@ services:
       - product
       - order
       - payment
+      - address
 
   redis:  
     image: redis:7

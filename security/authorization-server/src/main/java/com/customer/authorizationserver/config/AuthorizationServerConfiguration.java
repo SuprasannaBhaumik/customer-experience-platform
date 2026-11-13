@@ -12,6 +12,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -163,8 +164,7 @@ public class AuthorizationServerConfiguration {
                 .redirectUri("http://localhost:3000/callback")
                 .scope(OidcScopes.OPENID)
                 .scope(OidcScopes.PROFILE)
-                .scope("customer.read")
-                .scope("customer.write")
+                .scopes( scopes -> scopes.addAll(Set.of("customer.read", "customer.write", "payment.read", "payment.write")))
                 .clientSettings(
                     ClientSettings
                         .builder()

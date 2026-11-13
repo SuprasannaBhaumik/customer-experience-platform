@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: payment
+  profiles:
+    # used only when no profile is active; docker-compose sets SPRING_PROFILES_ACTIVE=docker
+    default: local
 
 management:
   endpoints:

@@ -4,11 +4,14 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.springframework.stereotype.Service;
+
 import com.customer.payment.integration.payment.PaymentProviderClient;
 import com.customer.payment.integration.payment.dto.PaymentProviderRequest;
 import com.customer.payment.integration.payment.dto.PaymentProviderResult;
 import com.customer.payment.integration.payment.dto.PaymentProviderStatus;
 
+@Service 
 public class FakePaymentProviderClient implements PaymentProviderClient{
 
     private final ConcurrentMap<String, PaymentProviderResult> results = new ConcurrentHashMap<>();
